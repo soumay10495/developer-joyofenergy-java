@@ -6,15 +6,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import uk.tw.energy.bean.Car;
 import uk.tw.energy.domain.ElectricityReading;
 import uk.tw.energy.domain.PricePlan;
 import uk.tw.energy.generator.ElectricityReadingsGenerator;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
@@ -62,4 +60,12 @@ public class SeedingApplicationDataConfiguration {
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         return objectMapper;
     }
+
+    @Bean
+    public List<Car> specialList() {
+        Car c1 = new Car("Maruti", 8765);
+        Car c2 = new Car("Honda", 89765);
+        return new ArrayList<>(Arrays.asList(c1,c2));
+    }
+
 }

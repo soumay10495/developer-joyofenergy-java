@@ -6,11 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import uk.tw.energy.builders.MeterReadingsBuilder;
 import uk.tw.energy.domain.MeterReadings;
 
@@ -61,6 +57,17 @@ public class EndpointTest {
 
         ResponseEntity<String> response =
                 restTemplate.getForEntity("/price-plans/recommend/" + smartMeterId + "?limit=2", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void shouldSetGivenPricePlanIdForSmartMeterId() throws JsonProcessingException {
+        String smartMeterId = "meter";
+        populateMeterReadingsForMeter(smartMeterId);
+
+        ResponseEntity<String> response =
+                restTemplate.postForEntity("/price-plans/set-plan/" + smartMeterId + "?pricePlanId=price-plan-1",
+                        HttpEntity.EMPTY, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 

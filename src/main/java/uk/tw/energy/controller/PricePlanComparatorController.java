@@ -1,21 +1,12 @@
 package uk.tw.energy.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.tw.energy.service.AccountService;
 import uk.tw.energy.service.PricePlanService;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/price-plans")
@@ -68,5 +59,25 @@ public class PricePlanComparatorController {
         }
 
         return ResponseEntity.ok(recommendations);
+    }
+
+    @PostMapping("/set-plan/{smartMeterId}")
+    public ResponseEntity<String> setPricePlanForSmartMeterId(@PathVariable String smartMeterId,
+                                                              @RequestParam(value = "pricePlanId", required = false) String pricePlanId) {
+        if(pricePlanService.getMeterReadingService().getReadings(smartMeterId).isEmpty())
+            return ResponseEntity.badRequest().body("Invalid Smart Meter ID");
+        if (pricePlanId==null) {
+            Optional<Map<String, BigDecimal>> pricePlansWithCost = pricePlanService.getConsumptionCostOfElectricityReadingsForEachPricePlan(smartMeterId);
+            accountService.setSmartMeterToPricePlanAccounts(smartMeterId,
+                    pricePlansWithCost.get().entrySet().stream().
+                            min(Map.Entry.comparingByValue()).map((Map.Entry::getKey)).get());
+        } else {
+            if (pricePlanService.getPricePlans().stream()
+                    .noneMatch(pp -> pp.getPlanName().equals(pricePlanId))) {
+                return ResponseEntity.badRequest().body("Invalid Price Plan ID");
+            }
+            accountService.setSmartMeterToPricePlanAccounts(smartMeterId,pricePlanId);
+        }
+        return ResponseEntity.ok().build();
     }
 }

@@ -114,4 +114,36 @@ public class PricePlanComparatorControllerTest {
     public void givenNoMatchingMeterIdShouldReturnNotFound() {
         assertThat(controller.calculatedCostForEachPricePlan("not-found").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    public void givenInvalidSmartMeterIDShouldReturnErrorResponse(){
+        assertThat(controller.setPricePlanForSmartMeterId("wrong-id",null).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void givenInvalidPricePlanIDShouldReturnErrorResponse(){
+        assertThat(controller.setPricePlanForSmartMeterId(SMART_METER_ID,"wrong-id").getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldSetCheapestPlanForSmartMeterId(){
+        ElectricityReading electricityReading = new ElectricityReading(Instant.now().minusSeconds(1800), BigDecimal.valueOf(35.0));
+        ElectricityReading otherReading = new ElectricityReading(Instant.now(), BigDecimal.valueOf(3.0));
+        meterReadingService.storeReadings(SMART_METER_ID, Arrays.asList(electricityReading, otherReading));
+
+        controller.setPricePlanForSmartMeterId(SMART_METER_ID,null);
+
+        assertThat(accountService.getPricePlanIdForSmartMeterId(SMART_METER_ID)).isEqualTo(PRICE_PLAN_2_ID);
+    }
+
+    @Test
+    public void shouldSetGivenPlanForSmartMeterId(){
+        ElectricityReading electricityReading = new ElectricityReading(Instant.now().minusSeconds(1800), BigDecimal.valueOf(35.0));
+        ElectricityReading otherReading = new ElectricityReading(Instant.now(), BigDecimal.valueOf(3.0));
+        meterReadingService.storeReadings(SMART_METER_ID, Arrays.asList(electricityReading, otherReading));
+
+        controller.setPricePlanForSmartMeterId(SMART_METER_ID,PRICE_PLAN_1_ID);
+
+        assertThat(accountService.getPricePlanIdForSmartMeterId(SMART_METER_ID)).isEqualTo(PRICE_PLAN_1_ID);
+    }
 }

@@ -1,5 +1,6 @@
 package uk.tw.energy.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.tw.energy.bean.Car;
 import uk.tw.energy.domain.ElectricityReading;
 import uk.tw.energy.domain.MeterReadings;
 import uk.tw.energy.service.MeterReadingService;
@@ -20,6 +22,8 @@ import java.util.Optional;
 public class MeterReadingController {
 
     private final MeterReadingService meterReadingService;
+    @Autowired
+    private List<Car> carList;
 
     public MeterReadingController(MeterReadingService meterReadingService) {
         this.meterReadingService = meterReadingService;
@@ -47,5 +51,10 @@ public class MeterReadingController {
         return readings.isPresent()
                 ? ResponseEntity.ok(readings.get())
                 : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/cars")
+    public ResponseEntity<List<Car>> getCarsList(){
+        return ResponseEntity.ok(carList);
     }
 }
